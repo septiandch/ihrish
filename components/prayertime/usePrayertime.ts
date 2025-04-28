@@ -1,113 +1,114 @@
-import { OriginalPrayerLabel, PrayerLabel } from "@/components/prayertime/types";
+import { PrayerLabel, PrayTimes } from "@/components/prayertime/types";
 import { usePrayerStore } from "@/components/prayertime/usePrayerStore";
-import calendarSystems from "@calidy/dayjs-calendarsystems";
-import { CalculationMethod, CalculationParameters, Coordinates, PrayerTimes } from "adhan";
+import { PrayTimes as PrayTimesLib } from "@/lib/utils";
 import dayjs from "dayjs";
-import duration from "dayjs/plugin/duration";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
-type PrayerTimeType = { [prayer in PrayerLabel]: string };
+const PT = new (PrayTimesLib as any)("Indonesia");
 
-dayjs.extend(duration);
-dayjs.extend(calendarSystems);
+export function toDayjs(time: string) {
+  const [hours, minutes] = time.split(":").map(Number);
+  return dayjs().set("hour", hours).set("minute", minutes).set("second", 0).millisecond(0);
+}
 
-const prayerLabel: { [key in OriginalPrayerLabel | "none"]: string } = {
-  none: "None",
-  sunrise: "Terbit",
-  fajr: "Subuh",
-  dhuhr: "Dzuhur",
-  asr: "Ashar",
-  maghrib: "Maghrib",
-  isha: "Isya",
-};
+function adjustMin(time: string, minutesToAdd: number) {
+  const updatedTime = toDayjs(time).add(minutesToAdd, "minute");
+  return updatedTime.format("HH:mm");
+}
 
-export function useCurrentTime() {
-  const [time, setTime] = useState(() => dayjs());
+function prayerCountdown(prayTimes: PrayTimes) {
+  const now = dayjs().format("HH:mm");
+  let nextPrayer: PrayerLabel = "Imsyak";
+  let currentPrayer: PrayerLabel | undefined = undefined;
+  let diff = Infinity;
+  let initDiff = Infinity;
+
+  const [hours, minutes] = now.split(":").map(Number);
+  const nTime = hours * 60 + minutes;
+
+  Object.entries(prayTimes).forEach(([label, time], index) => {
+    const [pHours, pMinutes] = time.split(":").map(Number);
+    const pTime = pHours * 60 + pMinutes;
+
+    const pDiff = pTime - nTime;
+
+    if (pDiff >= 0 && pDiff < diff) {
+      nextPrayer = label as PrayerLabel;
+      diff = pDiff;
+    }
+
+    if (index === 0) {
+      // Set initial value if closest today's prayer time not found
+      const nToMidnight = 24 * 60 - nTime;
+      // Set for closest tomorrow prayer time
+      initDiff = nToMidnight + pTime;
+    }
+
+    if (pDiff < 0) {
+      // Set current prayer time label
+      currentPrayer = label as PrayerLabel;
+    }
+  });
+
+  if (diff === Infinity) {
+    diff = initDiff;
+    //Invalidate current prayer
+    currentPrayer = undefined;
+  }
+
+  // Calculate duration for next prayer time
+  const hourLeft = Math.round(diff / 60);
+  const minLeft = diff - hourLeft * 60;
+
+  const timeLeft = `${hourLeft > 0 ? `${hourLeft} Jam, ` : ""}${minLeft} menit lagi`;
+
+  return { currentPrayer, nextPrayer, timeLeft };
+}
+
+function usePrayTimes() {
+  const { coordinates, timezone, adjustments, prayTimes, setPrayTimes } = usePrayerStore();
 
   useEffect(() => {
-    // Create interval
-    const interval = setInterval(() => {
-      setTime(dayjs());
-    }, 1000);
+    const updateTimes = () => {
+      const now = new Date();
+      const times = PT.getTimes(now, [coordinates.lat, coordinates.long], timezone);
 
-    // Cleanup interval on unmount
-    return () => clearInterval(interval);
-  }, []); // Empty dependency array since we don't need to recreate interval
+      const adjustedTimes = {
+        Imsyak: adjustMin(times.imsak, adjustments.imsak),
+        Subuh: adjustMin(times.fajr, adjustments.fajr),
+        Terbit: adjustMin(times.sunrise, adjustments.sunrise),
+        Dzuhur: adjustMin(times.dhuhr, adjustments.dhuhr),
+        Ashar: adjustMin(times.asr, adjustments.asr),
+        Maghrib: adjustMin(times.maghrib, adjustments.maghrib),
+        Isya: adjustMin(times.isha, adjustments.isha),
+      };
 
-  return time;
+      setPrayTimes(adjustedTimes);
+    };
+
+    updateTimes(); // first call immediately
+
+    const now = new Date();
+    const millisUntilMidnight =
+      new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime() - now.getTime();
+
+    const timeout = setTimeout(() => {
+      updateTimes();
+
+      // after midnight update, set interval every 24h
+      setInterval(updateTimes, 24 * 60 * 60 * 1000);
+    }, millisUntilMidnight);
+
+    return () => clearTimeout(timeout); // clear on unmount
+  }, [coordinates, timezone, adjustments]);
+
+  return prayTimes;
 }
 
 export default function usePrayertime() {
-  const { coordinates, adjustments, nextPrayer: nextPrayerId } = usePrayerStore();
+  const times = usePrayTimes();
 
-  const time = useCurrentTime();
-  const [times, setTimes] = useState<PrayerTimeType>();
+  const { currentPrayer, nextPrayer, timeLeft } = prayerCountdown(times);
 
-  const date = time.date();
-  const nextPrayer = prayerLabel[nextPrayerId || "none"];
-
-  useEffect(() => {
-    const coords = new Coordinates(coordinates.lat, coordinates.long); //-6.2, 106.82); // contoh Jakarta
-    const params = new CalculationParameters("MuslimWorldLeague", 20, 18); // Fajr: 20°, Isha: 18°
-    params.madhab = "shafi";
-    params.adjustments = adjustments;
-
-    const now = new Date();
-    const prayerTimes = new PrayerTimes(coords, now, params);
-
-    setTimes({
-      Imsyak: new Date(prayerTimes.fajr.getTime() - 10 * 60000).toLocaleTimeString(), // 10 minutes before Fajr
-      Subuh: prayerTimes.fajr.toLocaleTimeString(),
-      Terbit: prayerTimes.sunrise.toLocaleTimeString(),
-      Dzuhur: prayerTimes.dhuhr.toLocaleTimeString(),
-      Ashar: prayerTimes.asr.toLocaleTimeString(),
-      Maghrib: prayerTimes.maghrib.toLocaleTimeString(),
-      Isya: prayerTimes.isha.toLocaleTimeString(),
-    });
-  }, [date]);
-
-  return { times, nextPrayer };
-}
-
-export function usePrayerCountdown() {
-  const { coordinates, nextPrayer, setNextPrayer } = usePrayerStore();
-  const time = useCurrentTime();
-
-  const [countdown, setCountdown] = useState<{ label: string; time: string }>({
-    label: "None",
-    time: "00:00:00",
-  });
-
-  const coords = new Coordinates(coordinates.lat, coordinates.long); //-6.2, 106.82); // contoh Jakarta
-  const params = CalculationMethod.MuslimWorldLeague();
-
-  // Only run clock after component mounts
-  useEffect(() => {
-    // Get today next prayer time
-    const todayPrayerTimes = new PrayerTimes(coords, time.toDate(), params);
-
-    let nextPrayerId = todayPrayerTimes.nextPrayer();
-    let nextPrayerTime = todayPrayerTimes.timeForPrayer(nextPrayerId) || dayjs().toDate();
-
-    if (nextPrayerId === "none") {
-      // If target time has passed today, set it for tomorrow fajr
-      const tomorrowPrayerTimes = new PrayerTimes(coords, time.add(1, "day").toDate(), params);
-
-      nextPrayerId = "fajr";
-      nextPrayerTime = tomorrowPrayerTimes.fajr;
-    }
-
-    // Calculate duration for next prayer time
-    const diff = dayjs(nextPrayerTime).diff(time);
-    const duration = dayjs.duration(diff);
-
-    const formattedDuration = `${String(duration.hours()).padStart(2, "0")}:${String(
-      duration.minutes()
-    ).padStart(2, "0")}:${String(duration.seconds()).padStart(2, "0")}`;
-
-    setNextPrayer(nextPrayerId);
-    setCountdown({ label: prayerLabel[nextPrayerId], time: formattedDuration });
-  }, [time]);
-
-  return { nextPrayer, countdown };
+  return { times, currentPrayer, nextPrayer, timeLeft };
 }

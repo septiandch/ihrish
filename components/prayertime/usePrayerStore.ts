@@ -1,4 +1,4 @@
-import { OriginalPrayerLabel } from "@/components/prayertime/types";
+import { PrayerId, PrayTimes } from "@/components/prayertime/types";
 import { create } from "zustand";
 
 interface Coordinates {
@@ -7,44 +7,59 @@ interface Coordinates {
 }
 
 type Adjustments = {
-  [key in OriginalPrayerLabel]: number;
+  [key in PrayerId]: number;
+};
+
+const initPrayTimes: PrayTimes = {
+  Imsyak: "00:00",
+  Subuh: "00:00",
+  Terbit: "00:00",
+  Dzuhur: "00:00",
+  Ashar: "00:00",
+  Maghrib: "00:00",
+  Isya: "00:00",
 };
 
 type PrayerState = {
   //State
+  prayTimes: PrayTimes;
   coordinates: Coordinates;
   adjustments: Adjustments;
-  nextPrayer: OriginalPrayerLabel | undefined;
   hijriDateOffset: number;
+  timezone: number;
 
   // Dispatch
+  setPrayTimes: (prayTimes: PrayTimes) => void;
   setAdjustments: (adj: Adjustments) => void;
   setCoordinates: (coords: Coordinates) => void;
-  setNextPrayer: (prayer: OriginalPrayerLabel | undefined) => void;
   setHijriDateOffset: (offset: number) => void;
+  setTimezone: (tzone: number) => void;
 };
 
 export const usePrayerStore = create<PrayerState>((set, get) => ({
   //State
+  prayTimes: initPrayTimes,
   coordinates: {
     // Default to Jakarta coordinates
     lat: -6.2,
     long: 106.82,
   },
   adjustments: {
-    fajr: 3,
-    sunrise: -3,
+    imsak: 0,
+    fajr: 1,
+    sunrise: -4,
     dhuhr: 3,
-    asr: 3,
-    maghrib: 3,
-    isha: 2,
+    asr: 1,
+    maghrib: 1,
+    isha: 1,
   },
-  nextPrayer: undefined,
   hijriDateOffset: -1,
+  timezone: 7,
 
   // Dispatch
+  setPrayTimes: (prayTimes) => set({ prayTimes }),
   setAdjustments: (adj) => set({ adjustments: { ...adj, ...get().adjustments } }),
   setCoordinates: (coords) => set({ coordinates: coords }),
-  setNextPrayer: (nextPrayer) => set({ nextPrayer }),
   setHijriDateOffset: (hijriDateOffset) => set({ hijriDateOffset }),
+  setTimezone: (timezone) => set({ timezone }),
 }));

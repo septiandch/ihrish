@@ -11,18 +11,20 @@ export default function Home() {
   return (
     <div className="relative w-screen h-screen space-y-4 p-8 bg-gradient-to-b from-emerald-500 to-emerald-600">
       <div className="grid grid-cols-6 gap-4">
-        <div className="col-span-5 flex flex-col justify-between gap-4">
-          <div className=" flex justify-between gap-8 px-8 text-emerald-900">
+        <div className="col-span-5 flex flex-col gap-4">
+          <div className="flex justify-between gap-8 mx-4 text-shadow-md">
             <div className="flex justify-start items-center gap-4 m-auto w-full">
-              <Logo className="h-20 w-20" />
+              <div className="h-20 w-20 rounded-lg bg-white shadow-md">
+                <Logo className="m-auto p-2 text-emerald-600" />
+              </div>
 
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 pr-4 text-white">
                 <span className="text-4xl font-bold">Masjid Al-Ikhlash</span>
                 <span className="text-lg">Villa Mutiara Cikarang 1 Blok A</span>
               </div>
             </div>
 
-            <div className="flex justify-center items-center gap-4">
+            <div className="flex justify-center items-center gap-4 text-white">
               <Date />
               <Clock className="pb-1" />
             </div>
@@ -52,9 +54,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="col-span-1 w-full">
-          <PrayerTime />
-        </div>
+        <PrayerTime className="col-span-1" />
       </div>
     </div>
   );
