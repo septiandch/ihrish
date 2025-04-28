@@ -2,7 +2,7 @@ import { PrayerLabel, PrayTimes } from "@/components/prayertime/types";
 import { usePrayerStore } from "@/components/prayertime/usePrayerStore";
 import { PrayTimes as PrayTimesLib } from "@/lib/utils";
 import dayjs from "dayjs";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const PT = new (PrayTimesLib as any)("Indonesia");
 
@@ -58,7 +58,7 @@ function prayerCountdown(prayTimes: PrayTimes) {
 
   // Calculate duration for next prayer time
   const hourLeft = Math.round(diff / 60);
-  const minLeft = diff - hourLeft * 60;
+  const minLeft = Math.abs(diff - hourLeft * 60);
 
   const timeLeft = `${hourLeft > 0 ? `${hourLeft} Jam, ` : ""}${minLeft} menit lagi`;
 
@@ -96,19 +96,56 @@ function usePrayTimes() {
       updateTimes();
 
       // after midnight update, set interval every 24h
-      setInterval(updateTimes, 24 * 60 * 60 * 1000);
+      const interval = setInterval(updateTimes, 24 * 60 * 60 * 1000);
+
+      // Return cleanup function that clears both timeout and interval
+      return () => {
+        clearTimeout(timeout);
+        clearInterval(interval);
+      };
     }, millisUntilMidnight);
 
-    return () => clearTimeout(timeout); // clear on unmount
+    return () => clearTimeout(timeout);
   }, [coordinates, timezone, adjustments]);
 
   return prayTimes;
 }
 
+type PrayerCountdown = {
+  currentPrayer: PrayerLabel | undefined;
+  nextPrayer: PrayerLabel;
+  timeLeft: string;
+};
+
 export default function usePrayertime() {
   const times = usePrayTimes();
+  const [countdown, setCountdown] = useState<PrayerCountdown>();
 
-  const { currentPrayer, nextPrayer, timeLeft } = prayerCountdown(times);
+  // Update countdown whenever times change
+  useEffect(() => {
+    setCountdown(prayerCountdown(times));
+  }, [times]);
 
-  return { times, currentPrayer, nextPrayer, timeLeft };
+  // Interval effect that aligns with minute changes
+  useEffect(() => {
+    // Calculate milliseconds until next minute
+    const now = new Date();
+    const msUntilNextMinute = (60 - now.getSeconds() + 1) * 1000 - now.getMilliseconds();
+
+    // Wait for the next minute to start the interval
+    const timeout = setTimeout(() => {
+      setCountdown(prayerCountdown(times));
+
+      // Start interval exactly on minute change
+      const interval = setInterval(() => {
+        setCountdown(prayerCountdown(times));
+      }, 60 * 1000);
+
+      return () => clearInterval(interval);
+    }, msUntilNextMinute);
+
+    return () => clearTimeout(timeout);
+  }, [times]);
+
+  return { times, ...countdown };
 }
