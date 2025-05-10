@@ -1,34 +1,25 @@
 import { PrayerLabel, PrayTimes } from "@/components/prayertime/types";
 import { usePrayerStore } from "@/components/prayertime/usePrayerStore";
 import { PrayTimes as PrayTimesLib } from "@/lib/utils";
+import { adjustMin, toSec, toTimeStr } from "@/lib/utils/time";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 
 const PT = new (PrayTimesLib as any)("Indonesia");
 
-export function toDayjs(time: string) {
-  const [hours, minutes] = time.split(":").map(Number);
-  return dayjs().set("hour", hours).set("minute", minutes).set("second", 0).millisecond(0);
-}
-
-function adjustMin(time: string, minutesToAdd: number) {
-  const updatedTime = toDayjs(time).add(minutesToAdd, "minute");
-  return updatedTime.format("HH:mm");
-}
-
 function prayerCountdown(prayTimes: PrayTimes) {
-  const now = dayjs().format("HH:mm");
+  const now = dayjs().format("HH:mm:ss");
   let nextPrayer: PrayerLabel = "Imsyak";
   let currentPrayer: PrayerLabel | undefined = undefined;
   let diff = Infinity;
   let initDiff = Infinity;
 
-  const [hours, minutes] = now.split(":").map(Number);
-  const nTime = hours * 60 + minutes;
+  const [hours, minutes, seconds] = now.split(":").map(Number);
+  const nTime = toSec(hours, "hour") + toSec(minutes, "minute") + seconds;
 
   Object.entries(prayTimes).forEach(([label, time], index) => {
     const [pHours, pMinutes] = time.split(":").map(Number);
-    const pTime = pHours * 60 + pMinutes;
+    const pTime = toSec(pHours, "hour") + toSec(pMinutes, "minute");
 
     const pDiff = pTime - nTime;
 
@@ -39,7 +30,7 @@ function prayerCountdown(prayTimes: PrayTimes) {
 
     if (index === 0) {
       // Set initial value if closest today's prayer time not found
-      const nToMidnight = 24 * 60 - nTime;
+      const nToMidnight = 24 * 60 * 60 - nTime;
       // Set for closest tomorrow prayer time
       initDiff = nToMidnight + pTime;
     }
@@ -57,10 +48,11 @@ function prayerCountdown(prayTimes: PrayTimes) {
   }
 
   // Calculate duration for next prayer time
-  const hourLeft = Math.round(diff / 60);
-  const minLeft = Math.abs(diff - hourLeft * 60);
+  const hourLeft = Math.floor(diff / (60 * 60) || 0);
+  const minLeft = Math.floor((diff - toSec(hourLeft, "hour")) / 60 || 0);
+  const secLeft = diff - (toSec(hourLeft, "hour") + toSec(minLeft, "minute"));
 
-  const timeLeft = `${hourLeft > 0 ? `${hourLeft} Jam, ` : ""}${minLeft} menit lagi`;
+  const timeLeft = toTimeStr(hourLeft, minLeft, secLeft);
 
   return { currentPrayer, nextPrayer, timeLeft };
 }
@@ -81,6 +73,7 @@ function usePrayTimes() {
         Ashar: adjustMin(times.asr, adjustments.asr),
         Maghrib: adjustMin(times.maghrib, adjustments.maghrib),
         Isya: adjustMin(times.isha, adjustments.isha),
+        // Isya: adjustMin(getTime(), 2),
       };
 
       setPrayTimes(adjustedTimes);
@@ -117,35 +110,48 @@ type PrayerCountdown = {
   timeLeft: string;
 };
 
-export default function usePrayertime() {
-  const times = usePrayTimes();
-  const [countdown, setCountdown] = useState<PrayerCountdown>();
+function usePrayCountdown(prayTimes: PrayTimes) {
+  const { countMode, setCountMode } = usePrayerStore();
+  const [countdown, setCountdown] = useState<PrayerCountdown>({
+    currentPrayer: "Imsyak",
+    nextPrayer: "Subuh",
+    timeLeft: "00:00:00",
+  });
 
-  // Update countdown whenever times change
+  // Update countdown whenever prayTimes change
   useEffect(() => {
-    setCountdown(prayerCountdown(times));
-  }, [times]);
+    setCountdown(prayerCountdown(prayTimes));
+  }, [prayTimes]);
 
   // Interval effect that aligns with minute changes
   useEffect(() => {
-    // Calculate milliseconds until next minute
-    const now = new Date();
-    const msUntilNextMinute = (60 - now.getSeconds() + 1) * 1000 - now.getMilliseconds();
-
-    // Wait for the next minute to start the interval
+    // Wait for the next second to start the interval
     const timeout = setTimeout(() => {
-      setCountdown(prayerCountdown(times));
+      setCountdown(prayerCountdown(prayTimes));
 
-      // Start interval exactly on minute change
+      // Start interval exactly on second change
       const interval = setInterval(() => {
-        setCountdown(prayerCountdown(times));
-      }, 60 * 1000);
+        setCountdown(prayerCountdown(prayTimes));
+      }, 1000);
 
       return () => clearInterval(interval);
-    }, msUntilNextMinute);
+    }, 1000);
 
     return () => clearTimeout(timeout);
-  }, [times]);
+  }, [prayTimes]);
+
+  useEffect(() => {
+    if (!countMode && countdown.timeLeft === "00:05:00") {
+      setCountMode(true);
+    }
+  }, [countdown]);
+
+  return countdown;
+}
+
+export default function usePrayertime() {
+  const times = usePrayTimes();
+  const countdown = usePrayCountdown(times);
 
   return { times, ...countdown };
 }

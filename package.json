@@ -11,6 +11,7 @@
   "dependencies": {
     "@calidy/dayjs-calendarsystems": "^1.11.3",
     "@radix-ui/react-aspect-ratio": "^1.1.4",
+    "@radix-ui/react-dialog": "^1.1.11",
     "@radix-ui/react-slot": "^1.2.0",
     "adhan": "^4.4.3",
     "class-variance-authority": "^0.7.1",

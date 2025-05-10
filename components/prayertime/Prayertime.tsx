@@ -3,6 +3,7 @@
 import { PrayerCountdown } from "@/components/prayertime/PrayerCountdown";
 import { PrayerLabel } from "@/components/prayertime/types";
 import usePrayertime from "@/components/prayertime/usePrayertime";
+import { useFullscreen } from "@/lib/hooks/useFullscreen";
 import { cn } from "@/lib/utils";
 import { ClassValue } from "clsx";
 import { CloudMoon, CloudSun, Haze, LucideIcon, Moon, Sun, Sunrise, Sunset } from "lucide-react";
@@ -50,20 +51,22 @@ function TimeCard({
   isActive: boolean;
   isIncoming: boolean;
 }) {
+  const { isFullscreen } = useFullscreen();
   const Icon = getIcon(label);
 
   return (
     <div
       className={cn(
-        "w-full h-auto p-2 text-white/81 text-md overflow-hidden rounded-lg",
+        "w-full h-auto p-2 text-white/81 text-2xl overflow-hidden rounded-lg",
+        !isFullscreen && "text-lg",
         isActive && "bg-white text-emerald-800",
         isIncoming && "bg-emerald-800"
       )}
     >
-      <div className="grid grid-cols-3 gap-6 items-center w-max mx-auto">
-        <Icon className="col-span-1 w-8 h-8" />
+      <div className="grid grid-cols-3 gap-4 items-center w-max mx-auto">
+        <Icon className="col-span-1 w-10 h-10" />
 
-        <div className="col-span-2 flex flex-col w-full items-start text-start">
+        <div className="col-span-2 flex flex-col w-full items-start">
           <span className="font-bold">{label}</span>
           <span>{time}</span>
         </div>
@@ -72,7 +75,7 @@ function TimeCard({
   );
 }
 
-const PrayerTime = ({ className }: { className?: ClassValue }) => {
+export function PrayerTime({ className }: { className?: ClassValue }) {
   const { times, currentPrayer, nextPrayer } = usePrayertime();
 
   if (!times) return <></>;
@@ -99,6 +102,6 @@ const PrayerTime = ({ className }: { className?: ClassValue }) => {
       </div>
     </div>
   );
-};
+}
 
 export default PrayerTime;

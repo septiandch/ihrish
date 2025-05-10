@@ -81,9 +81,9 @@ export function Date({ className }: { className?: ClassValue }) {
   const hijriDate = convertToHijri(time, hijriDateOffset);
 
   return (
-    <div className={cn("flex flex-col items-end w-max", className)}>
-      <span className="text-xl">{currentDate}</span>
-      <span className="text-xl">{hijriDate}</span>
+    <div className={cn("flex flex-col items-end w-max text-xl", className)}>
+      <span>{currentDate}</span>
+      <span>{hijriDate}</span>
     </div>
   );
 }
