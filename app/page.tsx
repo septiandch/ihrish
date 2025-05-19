@@ -3,11 +3,85 @@
 import Carousel from "@/components/carousel";
 import { Clock, PrayerSession, PrayerTime } from "@/components/prayertime";
 import { Date } from "@/components/prayertime/Date";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Marquee from "@/components/ui/marquee";
 import Logo from "@/lib/assets/logo.svg";
+import { getMediaFiles } from "@/lib/utils/getMediaFIles";
+import { useCallback, useEffect, useState } from "react";
 
 export default function Home() {
+  const [mediaFiles, setMediaFiles] = useState<string[]>(["/media/makkah.jpg"]);
+  const [connectionAttempts, setConnectionAttempts] = useState(0);
+
+  const fetchMedia = useCallback(async () => {
+    const files = await getMediaFiles();
+    if (files.length > 0) {
+      setMediaFiles(files);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Initial fetch
+    fetchMedia();
+
+    let retryTimeout: NodeJS.Timeout;
+    const maxRetries = 5;
+
+    function setupEventSource() {
+      // Set up SSE listener
+      const eventSource = new EventSource("/api/updates");
+
+      eventSource.addEventListener("connect", (event) => {
+        console.log("SSE connected successfully");
+        setConnectionAttempts(0); // Reset counter on successful connection
+      });
+
+      eventSource.addEventListener("update", (event) => {
+        console.log("Update event received");
+        fetchMedia();
+      });
+
+      // Also listen for general messages as fallback
+      eventSource.onmessage = (event) => {
+        console.log("SSE message received:", event.data);
+        if (event.data.includes("newImage")) {
+          fetchMedia();
+        }
+      };
+
+      eventSource.onerror = (error) => {
+        console.error("SSE connection error:", error);
+
+        // Close the errored connection
+        eventSource.close();
+
+        // Try to reconnect if we haven't exceeded max retries
+        if (connectionAttempts < maxRetries) {
+          const retryDelay = Math.min(1000 * Math.pow(2, connectionAttempts), 10000);
+          console.log(
+            `Retrying connection in ${retryDelay}ms (attempt ${
+              connectionAttempts + 1
+            }/${maxRetries})`
+          );
+
+          retryTimeout = setTimeout(() => {
+            setConnectionAttempts((prev) => prev + 1);
+            setupEventSource();
+          }, retryDelay);
+        }
+      };
+
+      return eventSource;
+    }
+
+    const eventSource = setupEventSource();
+
+    return () => {
+      console.log("Cleaning up SSE connection");
+      clearTimeout(retryTimeout);
+      eventSource.close();
+    };
+  }, [fetchMedia, connectionAttempts]);
+
   return (
     <>
       <div className="relative w-screen h-screen space-y-4 p-8 bg-gradient-to-b from-emerald-500 to-emerald-600">
@@ -32,21 +106,8 @@ export default function Home() {
             </div>
 
             <div className="h-max p-2 bg-emerald-800/20 rounded-lg overflow-hidden">
-              <div className="relative max-h-[78vh] rounded-lg overflow-hidden">
-                <AspectRatio ratio={16 / 9}>
-                  <Carousel
-                    sources={[
-                      "/media/1.jpg",
-                      "/media/2.jpg",
-                      "/media/3.jpg",
-                      "/media/4.jpg",
-                      "/media/5.jpg",
-                      "/media/6.jpg",
-                      "/media/7.jpg",
-                      "/media/8.jpg",
-                    ]}
-                  />
-                </AspectRatio>
+              <div className="relative h-[78vh] rounded-lg overflow-hidden">
+                <Carousel sources={mediaFiles} />
 
                 <div className="absolute bottom-0 w-full text-xl font-medium italic bg-black/30 text-white backdrop-blur-md py-2 rounded-b-lg overflow-hidden">
                   <Marquee text="Bersungguh-sungguhlah pada perkara-perkara yang bermanfaat bagimu, mintalah pertolongan kepada Allah dan janganlah kamu bersikap lemah. (HR. Ahmad 9026)" />

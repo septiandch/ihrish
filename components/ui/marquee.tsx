@@ -11,7 +11,7 @@ interface MarqueeProps {
 }
 
 export default function Marquee({ text, className, speed = 2 }: MarqueeProps) {
-  const [duration, setDuration] = useState("15s"); // Default duration for SSR
+  const [duration, setDuration] = useState("20s"); // Default duration for SSR
   const isMounted = useMounted();
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export default function Marquee({ text, className, speed = 2 }: MarqueeProps) {
   // After mounting, use the calculated duration
   return (
     <div
-      className={cn("w-full whitespace-nowrap animate-marquee", className)}
+      className={cn("w-full whitespace-nowrap animate-marquee text-3xl", className)}
       style={{ animationDuration: duration }}
     >
       {text}

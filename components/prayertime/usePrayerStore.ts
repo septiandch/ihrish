@@ -10,7 +10,7 @@ type Adjustments = {
   [key in PrayerId]: number;
 };
 
-type CountdownLabel = Exclude<PrayerLabel, "Imsyak" | "Terbit">;
+type CountdownLabel = Exclude<PrayerLabel, "Imsyak" | "Syuruq">;
 
 type Countdown = {
   [key in CountdownLabel]: number;
@@ -19,7 +19,7 @@ type Countdown = {
 const initPrayTimes: PrayTimes = {
   Imsyak: "00:00",
   Subuh: "00:00",
-  Terbit: "00:00",
+  Syuruq: "00:00",
   Dzuhur: "00:00",
   Ashar: "00:00",
   Maghrib: "00:00",

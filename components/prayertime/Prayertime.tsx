@@ -18,7 +18,7 @@ function getIcon(label: PrayerLabel) {
     case "Subuh":
       Icon = Haze;
       break;
-    case "Terbit":
+    case "Syuruq":
       Icon = Sunrise;
       break;
     case "Dzuhur":

@@ -4,5 +4,5 @@ export type CoordinateType = {
 };
 
 export type PrayerId = "imsak" | "fajr" | "sunrise" | "dhuhr" | "asr" | "maghrib" | "isha";
-export type PrayerLabel = "Imsyak" | "Subuh" | "Terbit" | "Dzuhur" | "Ashar" | "Maghrib" | "Isya";
+export type PrayerLabel = "Imsyak" | "Subuh" | "Syuruq" | "Dzuhur" | "Ashar" | "Maghrib" | "Isya";
 export type PrayTimes = { [key in PrayerLabel]: string };

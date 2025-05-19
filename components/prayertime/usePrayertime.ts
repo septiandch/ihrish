@@ -1,9 +1,11 @@
 import { PrayerLabel, PrayTimes } from "@/components/prayertime/types";
 import { usePrayerStore } from "@/components/prayertime/usePrayerStore";
 import { PrayTimes as PrayTimesLib } from "@/lib/utils";
-import { adjustMin, toSec, toTimeStr } from "@/lib/utils/time";
+import { adjustMin, toSec, toTimeSec, toTimeStr } from "@/lib/utils/time";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
+
+const COUNT_START_MIN = 5 * 60; //5 minutes
 
 const PT = new (PrayTimesLib as any)("Indonesia");
 
@@ -68,12 +70,12 @@ function usePrayTimes() {
       const adjustedTimes = {
         Imsyak: adjustMin(times.imsak, adjustments.imsak),
         Subuh: adjustMin(times.fajr, adjustments.fajr),
-        Terbit: adjustMin(times.sunrise, adjustments.sunrise),
+        Syuruq: adjustMin(times.sunrise, adjustments.sunrise + 15), // 15 minutes after sunrise
         Dzuhur: adjustMin(times.dhuhr, adjustments.dhuhr),
         Ashar: adjustMin(times.asr, adjustments.asr),
         Maghrib: adjustMin(times.maghrib, adjustments.maghrib),
         Isya: adjustMin(times.isha, adjustments.isha),
-        // Isya: adjustMin(getTime(), 2),
+        // Syuruq: adjustMin(getTime(), 5),
       };
 
       setPrayTimes(adjustedTimes);
@@ -141,7 +143,9 @@ function usePrayCountdown(prayTimes: PrayTimes) {
   }, [prayTimes]);
 
   useEffect(() => {
-    if (!countMode && countdown.timeLeft === "00:05:00") {
+    const timeLeft = toTimeSec(countdown.timeLeft);
+
+    if (!countMode && timeLeft > 0 && timeLeft < COUNT_START_MIN) {
       setCountMode(true);
     }
   }, [countdown]);

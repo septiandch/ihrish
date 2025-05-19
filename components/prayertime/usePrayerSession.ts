@@ -1,5 +1,6 @@
 import { usePrayerStore } from "@/components/prayertime/usePrayerStore";
 import usePrayertime from "@/components/prayertime/usePrayertime";
+import { useSound } from "@/lib/hooks/useSound";
 import { toSec, toTimeStr } from "@/lib/utils/time";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -29,6 +30,7 @@ function getCountStr(countDown: number) {
 export default function usePrayerSession() {
   const { nextPrayer, timeLeft } = usePrayertime();
   const { countMode, setCountMode, getIqamah, getAdhan } = usePrayerStore();
+  const { play: playBeep } = useSound("/media/beep.mp3");
 
   const [focusMode, setFocusMode] = useState(FOCUS_MODE.NONE);
   const [countDown, setCountDown] = useState(0);
@@ -43,6 +45,7 @@ export default function usePrayerSession() {
     if (isPrayTime) {
       switch (praySession) {
         case "Imsyak":
+        case "Syuruq":
           setFocusMode(FOCUS_MODE.NOTIFY);
           break;
         default:
@@ -69,25 +72,34 @@ export default function usePrayerSession() {
           setCountDown(getIqamah(praySession));
           break;
         case FOCUS_MODE.PRAYING:
-        case FOCUS_MODE.NOTIFY:
           // Set for 10 minutes
           setCountDown(toSec(10, "minute"));
+        case FOCUS_MODE.NOTIFY:
+          // Set for 30 sec
+          setCountDown(30);
           break;
       }
     }
-  }, [focusMode, timeLeft]);
+  }, [focusMode, countDown]);
 
   // Change mode on count down finished
   useEffect(() => {
     if (countDown === 0) {
       switch (focusMode) {
         case FOCUS_MODE.ADHAN:
+          playBeep();
           setFocusMode(FOCUS_MODE.IQAMAH);
           break;
         case FOCUS_MODE.IQAMAH:
+          playBeep();
           setFocusMode(FOCUS_MODE.PRAYING);
           break;
         case FOCUS_MODE.PRAYING:
+          playBeep();
+          setCountMode(false);
+          setFocusMode(FOCUS_MODE.NONE);
+          break;
+        case FOCUS_MODE.NOTIFY:
           setCountMode(false);
           setFocusMode(FOCUS_MODE.NONE);
           break;
@@ -120,8 +132,7 @@ export default function usePrayerSession() {
         sub = "HR. Bukhari, no. 723 dan Muslim, no. 433";
         break;
       case FOCUS_MODE.NOTIFY:
-        main = `Menjelang waktu ${praySession}`;
-        count = getTimeStr(timeLeft);
+        main = `Memasuki waktu ${praySession}`;
         break;
     }
 
