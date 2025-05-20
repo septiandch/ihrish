@@ -31,12 +31,10 @@ export default function Home() {
       const eventSource = new EventSource("/api/updates");
 
       eventSource.addEventListener("connect", (event) => {
-        console.log("SSE connected successfully");
         setConnectionAttempts(0); // Reset counter on successful connection
       });
 
       eventSource.addEventListener("update", (event) => {
-        console.log("Update event received");
         fetchMedia();
       });
 
@@ -76,7 +74,6 @@ export default function Home() {
     const eventSource = setupEventSource();
 
     return () => {
-      console.log("Cleaning up SSE connection");
       clearTimeout(retryTimeout);
       eventSource.close();
     };

@@ -57,7 +57,7 @@ const Carousel = ({ children, sources = ["/images/no-image.png"], ...props }: Ca
       <CarouselContent>
         {sources.map((src, index) => (
           <CarouselItem key={index} className="h-full w-full bg-gray-800">
-            <AspectRatio ratio={16 / 9}>
+            <AspectRatio ratio={15 / 7}>
               {src?.endsWith(".mp4") ? (
                 <video
                   autoPlay
