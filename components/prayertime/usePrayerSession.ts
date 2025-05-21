@@ -1,7 +1,7 @@
 import { usePrayerStore } from "@/components/prayertime/usePrayerStore";
 import usePrayertime from "@/components/prayertime/usePrayertime";
 import { useSound } from "@/lib/hooks/useSound";
-import { toSec, toTimeStr } from "@/lib/utils/time";
+import { toSec, toTimeSec, toTimeStr } from "@/lib/utils/time";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 const FOCUS_MODE = {
@@ -40,7 +40,7 @@ export default function usePrayerSession() {
   useEffect(() => {
     if (!countMode) return;
 
-    const isPrayTime = timeLeft === "00:00:00";
+    const isPrayTime = toTimeSec(timeLeft) === 0;
 
     if (isPrayTime) {
       switch (praySession) {
@@ -80,7 +80,7 @@ export default function usePrayerSession() {
           break;
       }
     }
-  }, [focusMode, countDown]);
+  }, [timeLeft, focusMode]);
 
   // Change mode on count down finished
   useEffect(() => {
@@ -120,7 +120,7 @@ export default function usePrayerSession() {
       case FOCUS_MODE.ADHAN:
         main = `Adzan ${praySession}`;
         sub =
-          "Ucapkanlah sebagaimana disebutkan oleh muadzin. Lalu jika sudah selesai kumandang azan, berdoalah, maka akan diijabahi (dikabulkan).\n[HR. Abu Daud no. 524 dan Ahmad 2: 172]";
+          "Ucapkanlah sebagaimana disebutkan oleh muadzin. Lalu jika sudah selesai kumandang azan, berdoalah, maka akan diijabahi (dikabulkan).\nHR. Abu Daud no. 524 dan Ahmad 2: 172";
         break;
       case FOCUS_MODE.IQAMAH:
         main = "Menuju Iqamah";

@@ -75,7 +75,6 @@ function usePrayTimes() {
         Ashar: adjustMin(times.asr, adjustments.asr),
         Maghrib: adjustMin(times.maghrib, adjustments.maghrib),
         Isya: adjustMin(times.isha, adjustments.isha),
-        // Syuruq: adjustMin(getTime(), 5),
       };
 
       setPrayTimes(adjustedTimes);
