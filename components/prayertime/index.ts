@@ -1,5 +1,4 @@
-export * from "./Clock";
-export * from "./PrayerCountdown";
-export * from "./PrayerSession";
-export * from "./Prayertime";
-export { default } from "./Prayertime";
+export { Clock } from "./Clock";
+export { PrayerCountdown } from "./PrayerCountdown";
+export { PrayerSession } from "./PrayerSession";
+export { PrayerTime } from "./Prayertime";

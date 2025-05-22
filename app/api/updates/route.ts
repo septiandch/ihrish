@@ -4,19 +4,17 @@ import { clients } from "../shared/clients";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  console.log("SSE connection requested");
-
   const stream = new ReadableStream({
     start(controller) {
-      console.log("New client connected");
-
       // Clean up any existing dead clients first
       const deadClients = new Set<ReadableStreamDefaultController>();
       clients.forEach((client) => {
         try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           if ((client as any).signal?.aborted || (client as any).closed) {
             deadClients.add(client);
           }
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
           deadClients.add(client);
         }
@@ -36,7 +34,6 @@ export async function GET() {
       }
     },
     cancel(controller) {
-      console.log("Client disconnected");
       clients.delete(controller);
       console.log(`Remaining clients: ${clients.size}`);
     },

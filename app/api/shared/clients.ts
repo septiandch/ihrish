@@ -1,14 +1,23 @@
-// Declare the global type
-declare global {
-  var sseClients: Set<ReadableStreamDefaultController> | undefined;
+// Define the extended controller type with the properties we need
+interface ExtendedController extends ReadableStreamDefaultController {
+  signal?: {
+    aborted: boolean;
+  };
+  closed?: boolean;
 }
+
+type GlobalWithSSE = typeof globalThis & {
+  sseClients: Set<ExtendedController> | undefined;
+};
+
+const globalWithSSE = globalThis as GlobalWithSSE;
 
 // Initialize the global clients set if it doesn't exist
-if (!global.sseClients) {
-  global.sseClients = new Set<ReadableStreamDefaultController>();
+if (!globalWithSSE.sseClients) {
+  globalWithSSE.sseClients = new Set<ExtendedController>();
 }
 
-export const clients = global.sseClients;
+export const clients = globalWithSSE.sseClients;
 
 export function notifyClients() {
   if (clients.size === 0) {
@@ -17,12 +26,12 @@ export function notifyClients() {
   }
 
   console.log(`Attempting to notify ${clients.size} clients`);
-  const deadClients = new Set<ReadableStreamDefaultController>();
+  const deadClients = new Set<ExtendedController>();
 
-  clients.forEach((client) => {
+  clients.forEach((client: ExtendedController) => {
     try {
       // Check if the client's stream is still writable
-      if ((client as any).signal?.aborted || (client as any).closed) {
+      if (client.signal?.aborted || client.closed) {
         deadClients.add(client);
         return;
       }

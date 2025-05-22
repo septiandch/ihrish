@@ -69,7 +69,7 @@ const convertToHijri = (datetime: Dayjs, dateOffset = 0) => {
   return `${hijriDay} ${hijriMonths[monthIndex]} ${hijriYear}H`;
 };
 
-export function Date({ className }: { className?: ClassValue }) {
+export default function Date({ className }: { className?: ClassValue }) {
   const { hijriDateOffset } = usePrayerStore();
   const time = dayjs();
 

@@ -10,7 +10,11 @@ type CarouselProps = {
   onContentScroll?: (index: number) => void;
 };
 
-const Carousel = ({ children, sources = ["/images/no-image.png"], ...props }: CarouselProps) => {
+export default function Carousel({
+  children,
+  sources = ["/images/no-image.png"],
+  ...props
+}: CarouselProps) {
   const plugin = useRef(Autoplay({ delay: 5000 }));
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -82,6 +86,4 @@ const Carousel = ({ children, sources = ["/images/no-image.png"], ...props }: Ca
       {children}
     </BaseCarousel>
   );
-};
-
-export default Carousel;
+}

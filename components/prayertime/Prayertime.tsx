@@ -103,5 +103,3 @@ export function PrayerTime({ className }: { className?: ClassValue }) {
     </div>
   );
 }
-
-export default PrayerTime;

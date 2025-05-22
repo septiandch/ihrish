@@ -3,9 +3,13 @@ import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import { notifyClients } from "../../shared/clients";
 
-export async function DELETE(request: NextRequest, { params }: { params: { filename: string } }) {
+type Params = {
+  params: Promise<{ filename: string }>;
+};
+
+export async function DELETE(_: NextRequest, { params }: Params) {
   try {
-    const filename = params.filename;
+    const filename = (await params).filename;
     const filePath = path.join(process.cwd(), "public/images", filename);
 
     await unlink(filePath);
@@ -14,8 +18,8 @@ export async function DELETE(request: NextRequest, { params }: { params: { filen
     notifyClients();
 
     return NextResponse.json({ message: "File deleted successfully" });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
-    console.error("Delete error:", error);
     return NextResponse.json({ error: "Failed to delete file" }, { status: 500 });
   }
 }

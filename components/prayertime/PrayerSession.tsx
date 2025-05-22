@@ -10,7 +10,7 @@ export function PrayerSession() {
   const { countMode, label, isAdhan, isPraying } = usePrayerSession();
 
   if (!isMounted || !countMode) {
-    return null;
+    return <></>;
   }
 
   return (

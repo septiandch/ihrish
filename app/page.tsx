@@ -2,10 +2,10 @@
 
 import Carousel from "@/components/carousel";
 import { Clock, PrayerSession, PrayerTime } from "@/components/prayertime";
-import { Date } from "@/components/prayertime/Date";
+import Date from "@/components/prayertime/Date";
 import Marquee from "@/components/ui/marquee";
 import Logo from "@/lib/assets/logo.svg";
-import { getMediaFiles } from "@/lib/utils/getMediaFIles";
+import getMediaFiles from "@/lib/utils/getMediaFIles";
 import { useCallback, useEffect, useState } from "react";
 
 export default function Home() {
@@ -30,11 +30,11 @@ export default function Home() {
       // Set up SSE listener
       const eventSource = new EventSource("/api/updates");
 
-      eventSource.addEventListener("connect", (event) => {
+      eventSource.addEventListener("connect", () => {
         setConnectionAttempts(0); // Reset counter on successful connection
       });
 
-      eventSource.addEventListener("update", (event) => {
+      eventSource.addEventListener("update", () => {
         fetchMedia();
       });
 
@@ -46,8 +46,8 @@ export default function Home() {
         }
       };
 
-      eventSource.onerror = (error) => {
-        console.error("SSE connection error:", error);
+      eventSource.onerror = () => {
+        console.error("SSE connection error");
 
         // Close the errored connection
         eventSource.close();
@@ -55,11 +55,6 @@ export default function Home() {
         // Try to reconnect if we haven't exceeded max retries
         if (connectionAttempts < maxRetries) {
           const retryDelay = Math.min(1000 * Math.pow(2, connectionAttempts), 10000);
-          console.log(
-            `Retrying connection in ${retryDelay}ms (attempt ${
-              connectionAttempts + 1
-            }/${maxRetries})`
-          );
 
           retryTimeout = setTimeout(() => {
             setConnectionAttempts((prev) => prev + 1);
@@ -80,44 +75,42 @@ export default function Home() {
   }, [fetchMedia, connectionAttempts]);
 
   return (
-    <>
-      <div className="relative w-screen h-screen space-y-4 p-8 bg-gradient-to-b from-emerald-500 to-emerald-600">
-        <div className="grid grid-cols-12 gap-4">
-          <div className="col-span-10 flex flex-col justify-between gap-4">
-            <div className="flex justify-between gap-8 mx-4 text-shadow-md">
-              <div className="flex justify-start items-center gap-4 m-auto w-full">
-                <div className="h-20 w-20 rounded-lg bg-white shadow-md">
-                  <Logo className="m-auto p-2 text-emerald-600" />
-                </div>
-
-                <div className="flex flex-col gap-2 pr-4 text-white">
-                  <span className="text-4xl font-bold">Masjid Al-Ikhlash</span>
-                  <span className="text-lg">Villa Mutiara Cikarang 1 Blok A</span>
-                </div>
+    <div className="relative w-screen h-screen space-y-4 p-8 bg-gradient-to-b from-emerald-500 to-emerald-600">
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-10 flex flex-col justify-between gap-4">
+          <div className="flex justify-between gap-8 mx-4 text-shadow-md">
+            <div className="flex justify-start items-center gap-4 m-auto w-full">
+              <div className="h-20 w-20 rounded-lg bg-white shadow-md">
+                <Logo className="m-auto p-2 text-emerald-600" />
               </div>
 
-              <div className="flex justify-center items-center gap-4 text-white">
-                <Date className="text-2xl" />
-                <Clock className="pb-1 text-7xl" />
+              <div className="flex flex-col gap-2 pr-4 text-white">
+                <span className="text-4xl font-bold">Masjid Al-Ikhlash</span>
+                <span className="text-lg">Villa Mutiara Cikarang 1 Blok A</span>
               </div>
             </div>
 
-            <div className="h-max p-2 bg-emerald-800/20 rounded-lg overflow-hidden">
-              <div className="relative h-[78vh] rounded-lg overflow-hidden">
-                <Carousel sources={mediaFiles} />
-
-                <div className="absolute bottom-0 w-full text-xl font-medium italic bg-black/30 text-white backdrop-blur-md py-2 rounded-b-lg overflow-hidden">
-                  <Marquee text="Bersungguh-sungguhlah pada perkara-perkara yang bermanfaat bagimu, mintalah pertolongan kepada Allah dan janganlah kamu bersikap lemah. (HR. Ahmad 9026)" />
-                </div>
-              </div>
+            <div className="flex justify-center items-center gap-4 text-white">
+              <Date className="text-2xl" />
+              <Clock className="pb-1 text-7xl" />
             </div>
           </div>
 
-          <PrayerTime className="col-span-2" />
+          <div className="h-max p-2 bg-emerald-800/20 rounded-lg overflow-hidden">
+            <div className="relative h-[78vh] rounded-lg overflow-hidden">
+              <Carousel sources={mediaFiles} />
+
+              <div className="absolute bottom-0 w-full text-xl font-medium italic bg-black/30 text-white backdrop-blur-md py-2 rounded-b-lg overflow-hidden">
+                <Marquee text="Bersungguh-sungguhlah pada perkara-perkara yang bermanfaat bagimu, mintalah pertolongan kepada Allah dan janganlah kamu bersikap lemah. (HR. Ahmad 9026)" />
+              </div>
+            </div>
+          </div>
         </div>
 
-        <PrayerSession />
+        <PrayerTime className="col-span-2" />
       </div>
-    </>
+
+      <PrayerSession />
+    </div>
   );
 }

@@ -1,4 +1,4 @@
-export async function getMediaFiles() {
+export default async function getMediaFiles() {
   try {
     const response = await fetch("/api/files", {
       // Prevent caching

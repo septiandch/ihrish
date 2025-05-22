@@ -2,12 +2,13 @@ import { PrayerLabel, PrayTimes } from "@/components/prayertime/types";
 import { usePrayerStore } from "@/components/prayertime/usePrayerStore";
 import { PrayTimes as PrayTimesLib } from "@/lib/utils";
 import { adjustMin, toSec, toTimeSec, toTimeStr } from "@/lib/utils/time";
+import PrayTimesType from "@/types/praytimes";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 
 const COUNT_START_MIN = 5 * 60; //5 minutes
 
-const PT = new (PrayTimesLib as any)("Indonesia");
+const PT = new (PrayTimesLib as unknown as typeof PrayTimesType)("Indonesia");
 
 function prayerCountdown(prayTimes: PrayTimes) {
   const now = dayjs().format("HH:mm:ss");
