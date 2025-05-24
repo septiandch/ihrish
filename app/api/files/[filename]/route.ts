@@ -1,5 +1,5 @@
 import { storageConfig } from "@/lib/config/storage";
-import { createReadStream, statSync } from "fs";
+import { readFileSync, statSync } from "fs";
 import { stat, unlink } from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
@@ -32,13 +32,14 @@ export async function GET(
     // Check if file exists
     try {
       await stat(filePath);
-    } catch (e) {
+    } catch {
+      // Removed unused 'e' parameter
       return corsHeaders(NextResponse.json({ error: "File not found" }, { status: 404 }));
     }
 
     // Get file stats for headers
     const stats = statSync(filePath);
-    const fileStream = createReadStream(filePath);
+    const fileBuffer = readFileSync(filePath);
 
     // Determine content type based on file extension
     const ext = path.extname(filename).toLowerCase();
@@ -54,7 +55,7 @@ export async function GET(
     const contentType = mimeTypes[ext] || "application/octet-stream";
 
     // Create response with proper headers
-    const response = new NextResponse(fileStream as any, {
+    const response = new NextResponse(fileBuffer, {
       headers: {
         "Content-Type": contentType,
         "Content-Length": stats.size.toString(),
@@ -64,8 +65,8 @@ export async function GET(
 
     // Add CORS headers
     return corsHeaders(response);
-  } catch (error) {
-    console.error("Error serving file:", error);
+  } catch (err) {
+    console.error("Error serving file:", err);
     return corsHeaders(NextResponse.json({ error: "Error serving file" }, { status: 500 }));
   }
 }
@@ -76,7 +77,7 @@ export async function DELETE(
 ) {
   try {
     const filename = (await params).filename;
-    const filePath = path.join(storageConfig.uploadsDir, filename); // Fixed to use storage directory
+    const filePath = path.join(storageConfig.uploadsDir, filename);
 
     await unlink(filePath);
 
@@ -84,7 +85,9 @@ export async function DELETE(
     notifyClients();
 
     return corsHeaders(NextResponse.json({ message: "File deleted successfully" }));
-  } catch (error) {
+  } catch (err) {
+    // Using the error in console.log
+    console.error("Failed to delete file:", err);
     return corsHeaders(NextResponse.json({ error: "Failed to delete file" }, { status: 500 }));
   }
 }
