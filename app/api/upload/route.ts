@@ -2,9 +2,14 @@ import { writeFile } from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import { notifyClients } from "../shared/clients";
+import { storageConfig, initStorage } from "@/lib/config/storage";
+import crypto from "crypto";
 
 export async function POST(request: NextRequest) {
   try {
+    // Initialize storage directory
+    await initStorage();
+
     const formData = await request.formData();
     const file = formData.get("file") as File;
 
@@ -12,11 +17,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file received" }, { status: 400 });
     }
 
+    // Generate a unique filename to prevent collisions
+    const fileExt = path.extname(file.name);
+    const uniqueFilename = `${crypto.randomUUID()}${fileExt}`;
+
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Make sure this path matches your getMediaFiles path
-    const filePath = path.join(process.cwd(), "public/images", file.name);
+    // Store file in the storage directory
+    const filePath = path.join(storageConfig.uploadsDir, uniqueFilename);
     await writeFile(filePath, buffer);
 
     // Add a small delay to ensure file is written
@@ -25,9 +34,10 @@ export async function POST(request: NextRequest) {
     // Notify clients
     notifyClients();
 
+    // Return the unique filename - we'll create an endpoint to serve these files
     return NextResponse.json({
       success: true,
-      file: `/images/${file.name}`,
+      file: `/api/files/${uniqueFilename}`,
     });
   } catch (error) {
     console.error("Upload error:", error);

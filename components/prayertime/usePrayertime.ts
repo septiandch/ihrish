@@ -13,7 +13,7 @@ const PT = new (PrayTimesLib as unknown as typeof PrayTimesType)("Indonesia");
 function prayerCountdown(prayTimes: PrayTimes) {
   const now = dayjs().format("HH:mm:ss");
   let nextPrayer: PrayerLabel = "Imsyak";
-  let currentPrayer: PrayerLabel | undefined = undefined;
+  let currentPrayer: PrayerLabel = "Isya";
   let diff = Infinity;
   let initDiff = Infinity;
 
@@ -46,8 +46,6 @@ function prayerCountdown(prayTimes: PrayTimes) {
 
   if (diff === Infinity) {
     diff = initDiff;
-    //Invalidate current prayer
-    currentPrayer = undefined;
   }
 
   // Calculate duration for next prayer time
@@ -144,8 +142,11 @@ function usePrayCountdown(prayTimes: PrayTimes) {
 
   useEffect(() => {
     const timeLeft = toTimeSec(countdown.timeLeft);
+    const prayTime = toTimeSec(prayTimes[countdown.nextPrayer]);
 
-    if (!countMode && timeLeft > 0 && timeLeft < COUNT_START_MIN) {
+    const isValid = prayTime > 0 && timeLeft > 0 && timeLeft < COUNT_START_MIN;
+
+    if (!countMode && isValid) {
       setCountMode(true);
     }
   }, [countdown]);
