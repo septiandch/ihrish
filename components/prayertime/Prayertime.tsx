@@ -4,6 +4,7 @@ import { PrayerCountdown } from "@/components/prayertime/PrayerCountdown";
 import { PrayerLabel } from "@/components/prayertime/types";
 import usePrayertime from "@/components/prayertime/usePrayertime";
 import { useFullscreen } from "@/lib/hooks/useFullscreen";
+import { useIsTv } from "@/lib/hooks/useIsTv";
 import { cn } from "@/lib/utils";
 import { ClassValue } from "clsx";
 import { CloudMoon, CloudSun, Haze, LucideIcon, Moon, Sun, Sunrise, Sunset } from "lucide-react";
@@ -52,23 +53,25 @@ function TimeCard({
   isIncoming: boolean;
 }) {
   const { isFullscreen } = useFullscreen();
+  const isTv = useIsTv();
   const Icon = getIcon(label);
 
   return (
     <div
       className={cn(
         "w-full h-auto p-2 text-white/81 text-2xl overflow-hidden rounded-lg",
-        !isFullscreen && "text-lg",
+        !isFullscreen && "text-xl",
+        isTv && "text-3xl",
         isActive && "bg-white text-emerald-800",
         isIncoming && "bg-emerald-800"
       )}
     >
-      <div className="grid grid-cols-3 gap-4 items-center w-max mx-auto">
-        <Icon className="col-span-1 w-10 h-10" />
+      <div className={cn("grid grid-cols-3 gap-4 items-center w-max mx-auto", isTv && "gap-8")}>
+        <Icon className={cn("col-span-1 w-10 h-10", isTv && "w-12 h-12")} />
 
         <div className="col-span-2 flex flex-col w-full items-start">
           <span className="font-bold">{label}</span>
-          <span>{time}</span>
+          <span className={cn(isTv && "font-bold")}>{time}</span>
         </div>
       </div>
     </div>

@@ -17,7 +17,7 @@ export default function Marquee({ text, className, speed = 2 }: MarqueeProps) {
   useEffect(() => {
     // Calculate animation duration on client-side only
     const containerWidth = window.innerWidth;
-    const textWidth = text.length * 8;
+    const textWidth = text.length * 12;
     const totalDistance = containerWidth + textWidth;
     setDuration(`${totalDistance / (speed * 100)}s`);
   }, [text, speed]);
@@ -30,7 +30,7 @@ export default function Marquee({ text, className, speed = 2 }: MarqueeProps) {
   // After mounting, use the calculated duration
   return (
     <div
-      className={cn("w-full whitespace-nowrap animate-marquee text-3xl", className)}
+      className={cn("w-full whitespace-nowrap animate-marquee text-xl", className)}
       style={{ animationDuration: duration }}
     >
       {text}
