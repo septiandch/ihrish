@@ -6,8 +6,9 @@ import { useIsTv } from "@/lib/hooks/useIsTv";
 import useMounted from "@/lib/hooks/useMounted";
 import { cn } from "@/lib/utils";
 import { ClassValue } from "clsx";
+import { Suspense } from "react";
 
-export function PrayerCountdown({ className }: { className?: ClassValue }) {
+function PrayerCountdownContent({ className }: { className?: ClassValue }) {
   const isMounted = useMounted();
   const { isFullscreen } = useFullscreen();
   const isTv = useIsTv();
@@ -33,5 +34,13 @@ export function PrayerCountdown({ className }: { className?: ClassValue }) {
       <span className="font-bold">Menuju {nextPrayer}</span>
       <span>{timeLeftLabel}</span>
     </div>
+  );
+}
+
+export function PrayerCountdown(props: { className?: ClassValue }) {
+  return (
+    <Suspense fallback={<div className={cn(props.className)}>Loading...</div>}>
+      <PrayerCountdownContent {...props} />
+    </Suspense>
   );
 }

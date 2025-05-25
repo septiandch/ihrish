@@ -8,9 +8,9 @@ import Logo from "@/lib/assets/logo.svg";
 import { useIsTv } from "@/lib/hooks/useIsTv";
 import { cn } from "@/lib/utils";
 import getMediaFiles from "@/lib/utils/getMediaFIles";
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 
-export default function Home() {
+function HomeContent() {
   const [mediaFiles, setMediaFiles] = useState<string[]>(["/media/makkah.jpg"]);
   const [connectionAttempts, setConnectionAttempts] = useState(0);
   const isTv = useIsTv();
@@ -78,7 +78,7 @@ export default function Home() {
   }, [fetchMedia, connectionAttempts]);
 
   return (
-    <div className="relative w-screen h-screen space-y-4 p-8 bg-gradient-to-b from-emerald-500 to-emerald-600">
+    <main className="relative flex flex-col items-center justify-between">
       <div className="grid grid-cols-12 gap-4">
         <div
           className={cn("col-span-10 flex flex-col justify-between gap-4", isTv && "col-span-9")}
@@ -126,6 +126,14 @@ export default function Home() {
       </div>
 
       <PrayerSession />
-    </div>
+    </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }

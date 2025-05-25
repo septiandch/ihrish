@@ -2,12 +2,13 @@
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 
-export function useIsTv(): boolean {
+export function useIsTv(defaultValue = false): boolean {
   const params = useSearchParams();
 
   const isTv = useMemo(() => {
+    if (!params) return defaultValue;
     return params.get("display") === "tv";
-  }, [params]);
+  }, [params, defaultValue]);
 
   return isTv;
 }

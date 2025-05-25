@@ -8,6 +8,7 @@ import { useIsTv } from "@/lib/hooks/useIsTv";
 import { cn } from "@/lib/utils";
 import { ClassValue } from "clsx";
 import { CloudMoon, CloudSun, Haze, LucideIcon, Moon, Sun, Sunrise, Sunset } from "lucide-react";
+import { Suspense } from "react";
 
 function getIcon(label: PrayerLabel) {
   let Icon: LucideIcon;
@@ -78,7 +79,7 @@ function TimeCard({
   );
 }
 
-export function PrayerTime({ className }: { className?: ClassValue }) {
+function PrayertimeContent({ className }: { className?: ClassValue }) {
   const { times, currentPrayer, nextPrayer } = usePrayertime();
 
   if (!times) return <></>;
@@ -104,5 +105,13 @@ export function PrayerTime({ className }: { className?: ClassValue }) {
         ))}
       </div>
     </div>
+  );
+}
+
+export function PrayerTime(props: { className?: ClassValue }) {
+  return (
+    <Suspense fallback={<div className={props.className}>Loading...</div>}>
+      <PrayertimeContent {...props} />
+    </Suspense>
   );
 }
