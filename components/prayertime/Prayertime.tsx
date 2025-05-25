@@ -110,7 +110,7 @@ function PrayertimeContent({ className }: { className?: ClassValue }) {
 
 export function PrayerTime(props: { className?: ClassValue }) {
   return (
-    <Suspense fallback={<div className={props.className}>Loading...</div>}>
+    <Suspense fallback={<div className={cn(props.className)}>Loading...</div>}>
       <PrayertimeContent {...props} />
     </Suspense>
   );
