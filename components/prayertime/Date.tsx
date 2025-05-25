@@ -59,7 +59,7 @@ const convertToHijri = (datetime: Dayjs, dateOffset = 0) => {
   const k = l1 - 354 * j;
 
   // Calculate Hijri components
-  const hijriYear = 30 * n + j;
+  const hijriYear = 30 * n + j + 1;
   const hijriMonth = Math.min(12, Math.ceil(k / 29.5));
   const hijriDay = Math.round(k - 29.5 * (hijriMonth - 1));
 

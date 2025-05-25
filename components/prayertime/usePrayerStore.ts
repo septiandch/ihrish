@@ -83,7 +83,7 @@ export const usePrayerStore = create<PrayerState>((set, get) => ({
     Maghrib: 5,
     Isya: 1,
   },
-  hijriDateOffset: -1,
+  hijriDateOffset: 0,
   timezone: 7,
   countMode: false,
 
