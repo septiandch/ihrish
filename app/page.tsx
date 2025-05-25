@@ -78,7 +78,7 @@ function HomeContent() {
   }, [fetchMedia, connectionAttempts]);
 
   return (
-    <main className="relative flex flex-col items-center justify-between">
+    <main className="relative w-screen h-screen space-y-4 p-8 bg-gradient-to-b from-emerald-500 to-emerald-600">
       <div className="grid grid-cols-12 gap-4">
         <div
           className={cn("col-span-10 flex flex-col justify-between gap-4", isTv && "col-span-9")}
