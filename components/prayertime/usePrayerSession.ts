@@ -74,6 +74,7 @@ export default function usePrayerSession() {
         case FOCUS_MODE.PRAYING:
           // Set for 10 minutes
           setCountDown(toSec(10, "minute"));
+          break;
         case FOCUS_MODE.NOTIFY:
           // Set for 30 sec
           setCountDown(30);
