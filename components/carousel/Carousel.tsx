@@ -4,6 +4,7 @@ import { MouseEvent, ReactNode, useCallback, useEffect, useRef } from "react";
 
 type CarouselProps = {
   sources?: string[];
+  interval?:number;
   children?: ReactNode;
   onClick?: (event: MouseEvent<HTMLDivElement>) => void;
   onContentScroll?: (index: number) => void;
@@ -11,10 +12,11 @@ type CarouselProps = {
 
 export default function Carousel({
   children,
+  interval = 5000,
   sources = ["/images/no-image.png"],
   ...props
 }: CarouselProps) {
-  const plugin = useRef(Autoplay({ delay: 5000 }));
+  const plugin = useRef(Autoplay({ delay: interval }));
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const carouselPlugin = plugin.current;

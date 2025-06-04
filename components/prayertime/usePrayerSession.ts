@@ -96,7 +96,6 @@ export default function usePrayerSession() {
           setFocusMode(FOCUS_MODE.PRAYING);
           break;
         case FOCUS_MODE.PRAYING:
-          playBeep();
           setCountMode(false);
           setFocusMode(FOCUS_MODE.NONE);
           break;

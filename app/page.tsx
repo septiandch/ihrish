@@ -3,6 +3,7 @@
 import Carousel from "@/components/carousel";
 import { Clock, PrayerSession, PrayerTime } from "@/components/prayertime";
 import Date from "@/components/prayertime/Date";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Marquee from "@/components/ui/marquee";
 import Logo from "@/lib/assets/logo.svg";
 import { useIsTv } from "@/lib/hooks/useIsTv";
@@ -85,27 +86,31 @@ function HomeContent() {
         >
           <div className="flex justify-between gap-8 mx-4 text-shadow-md">
             <div className="flex justify-start items-center gap-4 m-auto w-full">
-              <div className="h-20 w-20 rounded-lg bg-white shadow-md">
+              <div className={cn("h-20 w-20 rounded-lg bg-white shadow-md", isTv && "h-24 w-24")}>
                 <Logo className="m-auto p-2 text-emerald-600" />
               </div>
 
               <div className="flex flex-col gap-2 pr-4 text-white">
-                <span className="text-4xl font-extrabold">Masjid Al-Ikhlash</span>
-                <span className={cn("text-lg", isTv && "text-xl font-bold")}>
+                <span className={cn("text-4xl font-extrabold", isTv && "text-5xl")}>
+                  Masjid Al-Ikhlash
+                </span>
+                <span className={cn("text-lg", isTv && "text-3xl font-bold")}>
                   Villa Mutiara Cikarang Blok A
                 </span>
               </div>
             </div>
 
             <div className="flex justify-center items-center gap-4 text-white">
-              <Date className={cn("text-2xl", isTv && "font-bold")} />
-              <Clock className="pb-1 text-7xl" />
+              <Date className={cn("text-2xl", isTv && "text-4xl font-bold")} />
+              <Clock className={cn("pb-1 text-7xl", isTv && "text-8xl")} />
             </div>
           </div>
 
           <div className="h-max p-2 bg-emerald-800/20 rounded-lg overflow-hidden">
             <div className="relative h-[78vh] rounded-lg overflow-hidden">
-              <Carousel sources={mediaFiles} />
+              <AspectRatio ratio={16 / 9} className="h-full w-full">
+                <Carousel interval={15000} sources={mediaFiles} />
+              </AspectRatio>
 
               <div
                 className={cn(

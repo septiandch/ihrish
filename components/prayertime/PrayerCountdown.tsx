@@ -27,7 +27,7 @@ function PrayerCountdownContent({ className }: { className?: ClassValue }) {
       className={cn(
         "flex flex-col justify-center items-center w-full px-4 py-1 text-2xl text-emerald-800",
         !isFullscreen && "text-lg",
-        isTv && "text-2xl font-bold",
+        isTv && "text-4xl font-bold gap-2",
         className
       )}
     >

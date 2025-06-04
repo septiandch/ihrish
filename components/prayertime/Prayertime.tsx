@@ -67,10 +67,20 @@ function TimeCard({
         isIncoming && "bg-emerald-800"
       )}
     >
-      <div className={cn("grid grid-cols-3 gap-4 items-center w-max mx-auto", isTv && "gap-8")}>
+      <div
+        className={cn(
+          "grid grid-cols-3 gap-4 items-center w-max mx-auto",
+          isTv && "gap-8 grid-cols-5 w-full"
+        )}
+      >
         <Icon className={cn("col-span-1 w-10 h-10", isTv && "w-12 h-12")} />
 
-        <div className="col-span-2 flex flex-col w-full items-start">
+        <div
+          className={cn(
+            "col-span-2 flex flex-col w-full items-start",
+            isTv && "col-span-4 w-full flex-row justify-between text-5xl"
+          )}
+        >
           <span className="font-bold">{label}</span>
           <span className={cn(isTv && "font-bold")}>{time}</span>
         </div>
