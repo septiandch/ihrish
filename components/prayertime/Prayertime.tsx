@@ -60,9 +60,9 @@ function TimeCard({
   return (
     <div
       className={cn(
-        "w-full h-auto p-2 text-white/81 text-2xl overflow-hidden rounded-lg",
+        "w-full h-auto p-2 text-white/80 text-2xl overflow-hidden rounded-lg",
         !isFullscreen && "text-xl",
-        isTv && "text-3xl",
+        isTv && "text-3xl px-2 py-6",
         isActive && "bg-white text-emerald-800",
         isIncoming && "bg-emerald-800"
       )}
