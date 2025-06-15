@@ -2,7 +2,7 @@ import { usePrayerStore } from "@/components/prayertime/usePrayerStore";
 import usePrayertime from "@/components/prayertime/usePrayertime";
 import { useSound } from "@/lib/hooks/useSound";
 import { toSec, toTimeSec, toTimeStr } from "@/lib/utils/time";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const FOCUS_MODE = {
   NONE: 0,
@@ -35,6 +35,7 @@ export default function usePrayerSession() {
   const [focusMode, setFocusMode] = useState(FOCUS_MODE.NONE);
   const [countDown, setCountDown] = useState(0);
   const praySession = useMemo(() => nextPrayer, [countMode]);
+  const prevTimeLeft = useRef<string>("");
 
   // Prayer time session check
   useEffect(() => {
@@ -60,9 +61,10 @@ export default function usePrayerSession() {
 
     if (!isFocusMode) return;
 
-    if (countDown > 0) {
-      // countdown until -1 to wait for current prayer time update
-      setCountDown((prev) => prev - 1);
+    if (countDown > 0 && timeLeft !== prevTimeLeft.current) {
+      const nextCountDown = countDown - 1;
+      setCountDown(nextCountDown);
+      prevTimeLeft.current = timeLeft;
     } else {
       switch (focusMode) {
         case FOCUS_MODE.ADHAN:
