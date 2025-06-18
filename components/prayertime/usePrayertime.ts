@@ -10,7 +10,7 @@ const COUNT_START_MIN = 5 * 60; //5 minutes
 
 const PT = new (PrayTimesLib as unknown as typeof PrayTimesType)("Indonesia");
 
-function prayerCountdown(prayTimes: PrayTimes) {
+function getPrayerCountdown(prayTimes: PrayTimes) {
   const now = dayjs().format("HH:mm:ss");
   let nextPrayer: PrayerLabel = "Imsyak";
   let currentPrayer: PrayerLabel = "Isya";
@@ -69,7 +69,7 @@ function usePrayTimes() {
       const adjustedTimes = {
         Imsyak: adjustMin(times.imsak, adjustments.imsak),
         Subuh: adjustMin(times.fajr, adjustments.fajr),
-        Syuruq: adjustMin(times.sunrise, adjustments.sunrise + 15), // 15 minutes after sunrise
+        Syuruq: adjustMin(times.sunrise, adjustments.sunrise + 15),
         Dzuhur: adjustMin(times.dhuhr, adjustments.dhuhr),
         Ashar: adjustMin(times.asr, adjustments.asr),
         Maghrib: adjustMin(times.maghrib, adjustments.maghrib),
@@ -79,7 +79,7 @@ function usePrayTimes() {
       setPrayTimes(adjustedTimes);
     };
 
-    updateTimes(); // first call immediately
+    updateTimes(); // run immediately
 
     const now = new Date();
     const millisUntilMidnight =
@@ -88,17 +88,16 @@ function usePrayTimes() {
     const timeout = setTimeout(() => {
       updateTimes();
 
-      // after midnight update, set interval every 24h
-      const interval = setInterval(updateTimes, 24 * 60 * 60 * 1000);
-
-      // Return cleanup function that clears both timeout and interval
-      return () => {
-        clearTimeout(timeout);
-        clearInterval(interval);
-      };
+      interval = setInterval(updateTimes, 24 * 60 * 60 * 1000);
     }, millisUntilMidnight);
 
-    return () => clearTimeout(timeout);
+    // 👇 move interval outside so we can clear it
+    let interval: NodeJS.Timeout;
+
+    return () => {
+      clearTimeout(timeout);
+      if (interval) clearInterval(interval);
+    };
   }, [coordinates, timezone, adjustments]);
 
   return prayTimes;
@@ -110,46 +109,30 @@ type PrayerCountdown = {
   timeLeft: string;
 };
 
-function usePrayCountdown(prayTimes: PrayTimes) {
+export function usePrayCountdown(prayTimes: PrayTimes) {
   const { countMode, setCountMode } = usePrayerStore();
-  const [countdown, setCountdown] = useState<PrayerCountdown>({
-    currentPrayer: "Imsyak",
-    nextPrayer: "Subuh",
-    timeLeft: "00:00:00",
-  });
+  const [countdown, setCountdown] = useState<PrayerCountdown>(() => getPrayerCountdown(prayTimes));
 
-  // Update countdown whenever prayTimes change
+  // Update countdown every second
   useEffect(() => {
-    setCountdown(prayerCountdown(prayTimes));
-  }, [prayTimes]);
+    const update = () => setCountdown(getPrayerCountdown(prayTimes));
+    update(); // initial call
 
-  // Interval effect that aligns with minute changes
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [JSON.stringify(prayTimes)]); // Use stringify to detect structural changes only
+
+  // Trigger count mode if within 5 minutes
   useEffect(() => {
-    // Wait for the next second to start the interval
-    const timeout = setTimeout(() => {
-      setCountdown(prayerCountdown(prayTimes));
+    const timeLeftSec = toTimeSec(countdown.timeLeft);
+    const nextTimeSec = toTimeSec(prayTimes[countdown.nextPrayer]);
 
-      // Start interval exactly on second change
-      const interval = setInterval(() => {
-        setCountdown(prayerCountdown(prayTimes));
-      }, 1000);
-
-      return () => clearInterval(interval);
-    }, 1000);
-
-    return () => clearTimeout(timeout);
-  }, [prayTimes]);
-
-  useEffect(() => {
-    const timeLeft = toTimeSec(countdown.timeLeft);
-    const prayTime = toTimeSec(prayTimes[countdown.nextPrayer]);
-
-    const isValid = prayTime > 0 && timeLeft > 0 && timeLeft < COUNT_START_MIN;
+    const isValid = nextTimeSec > 0 && timeLeftSec > 0 && timeLeftSec < COUNT_START_MIN;
 
     if (!countMode && isValid) {
       setCountMode(true);
     }
-  }, [countdown]);
+  }, [countdown.timeLeft, countdown.nextPrayer, countMode]);
 
   return countdown;
 }
