@@ -7,7 +7,6 @@ import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 
 const COUNT_START_MIN = 5 * 60; //5 minutes
-const COUNT_MAX_SEC = 20 * 60; // 20 minutes
 
 const PT = new (PrayTimesLib as unknown as typeof PrayTimesType)("Indonesia");
 
@@ -128,14 +127,10 @@ export function usePrayCountdown(prayTimes: PrayTimes) {
     const timeLeftSec = toTimeSec(countdown.timeLeft);
     const nextTimeSec = toTimeSec(prayTimes[countdown.nextPrayer]);
 
-    const isValid =
-      nextTimeSec > 0 &&
-      timeLeftSec > 0 &&
-      timeLeftSec < COUNT_START_MIN &&
-      timeLeftSec < COUNT_MAX_SEC;
+    const isValid = nextTimeSec > 0 && timeLeftSec > 0 && timeLeftSec < COUNT_START_MIN;
 
-    if (!countMode && isValid) {
-      setCountMode(true);
+    if (!countMode) {
+      isValid && setCountMode(true);
     }
   }, [countdown.timeLeft, countdown.nextPrayer, countMode]);
 
@@ -146,5 +141,7 @@ export default function usePrayertime() {
   const times = usePrayTimes();
   const countdown = usePrayCountdown(times);
 
-  return { times, ...countdown };
+  const isValidTimeLeft = toTimeSec(countdown.timeLeft) <= COUNT_START_MIN;
+
+  return { times, ...countdown, isValidTimeLeft };
 }

@@ -2,7 +2,7 @@ import { usePrayerStore } from "@/components/prayertime/usePrayerStore";
 import usePrayertime from "@/components/prayertime/usePrayertime";
 import { useSound } from "@/lib/hooks/useSound";
 import { toSec, toTimeSec, toTimeStr } from "@/lib/utils/time";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 const FOCUS_MODE = {
   NONE: 0,
@@ -28,32 +28,38 @@ function getCountStr(countDown: number) {
 }
 
 export default function usePrayerSession() {
-  const { nextPrayer, timeLeft } = usePrayertime();
+  const { nextPrayer, timeLeft, isValidTimeLeft } = usePrayertime();
   const { countMode, setCountMode, getIqamah, getAdhan } = usePrayerStore();
   const { play: playBeep } = useSound("/media/beep.mp3");
 
   const [focusMode, setFocusMode] = useState(FOCUS_MODE.NONE);
   const [countDown, setCountDown] = useState(0);
   const praySession = useMemo(() => nextPrayer, [countMode]);
-  const prevTimeLeft = useRef<string>("");
 
-  // Prayer time session check
+  // Prayer time session check entry
   useEffect(() => {
     if (!countMode) return;
 
-    const isPrayTime = toTimeSec(timeLeft) === 0;
+    // Only apply when focus mode is NONE
+    if (focusMode === FOCUS_MODE.NONE) {
+      const isPrayTime = toTimeSec(timeLeft) === 0;
 
-    if (isPrayTime) {
-      switch (praySession) {
-        case "Imsyak":
-        case "Syuruq":
-          setFocusMode(FOCUS_MODE.NOTIFY);
-          break;
-        default:
-          setFocusMode(FOCUS_MODE.ADHAN);
+      if (isPrayTime) {
+        switch (praySession) {
+          case "Imsyak":
+          case "Syuruq":
+            setFocusMode(FOCUS_MODE.NOTIFY);
+            break;
+          default:
+            playBeep();
+            setFocusMode(FOCUS_MODE.ADHAN);
+        }
+      } else if (isValidTimeLeft) {
+        // Reset state on invalid timeLeft
+        setCountDown(0);
       }
     }
-  }, [countMode, timeLeft]);
+  }, [countMode, timeLeft, focusMode]);
 
   // Count down during focus mode
   useEffect(() => {
@@ -61,10 +67,9 @@ export default function usePrayerSession() {
 
     if (!isFocusMode) return;
 
-    if (countDown > 0 && timeLeft !== prevTimeLeft.current) {
+    if (countDown > 0) {
       const nextCountDown = countDown - 1;
       setCountDown(nextCountDown);
-      prevTimeLeft.current = timeLeft;
     } else {
       switch (focusMode) {
         case FOCUS_MODE.ADHAN:
@@ -90,7 +95,6 @@ export default function usePrayerSession() {
     if (countDown === 0) {
       switch (focusMode) {
         case FOCUS_MODE.ADHAN:
-          playBeep();
           setFocusMode(FOCUS_MODE.IQAMAH);
           break;
         case FOCUS_MODE.IQAMAH:
@@ -102,9 +106,9 @@ export default function usePrayerSession() {
           setFocusMode(FOCUS_MODE.NONE);
           break;
         case FOCUS_MODE.NOTIFY:
+        default:
           setCountMode(false);
           setFocusMode(FOCUS_MODE.NONE);
-          break;
       }
     }
   }, [countDown]);
