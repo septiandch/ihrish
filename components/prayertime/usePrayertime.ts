@@ -129,8 +129,8 @@ export function usePrayCountdown(prayTimes: PrayTimes) {
 
     const isValid = nextTimeSec > 0 && timeLeftSec > 0 && timeLeftSec < COUNT_START_MIN;
 
-    if (!countMode) {
-      isValid && setCountMode(true);
+    if (!countMode && isValid) {
+      setCountMode(true);
     }
   }, [countdown.timeLeft, countdown.nextPrayer, countMode]);
 

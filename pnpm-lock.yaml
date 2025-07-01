@@ -20,6 +20,9 @@ importers:
       '@radix-ui/react-slot':
         specifier: ^1.2.0
         version: 1.2.0(@types/react@19.1.2)(react@19.1.0)
+      '@umalqura/core':
+        specifier: ^0.0.7
+        version: 0.0.7
       adhan:
         specifier: ^4.4.3
         version: 4.4.3
@@ -1385,6 +1388,9 @@ packages:
   '@typescript-eslint/visitor-keys@8.32.1':
     resolution: {integrity: sha512-ar0tjQfObzhSaW3C3QNmTc5ofj0hDoNQ5XWrCy6zDyabdr0TWhCkClp+rywGNj/odAFBVzzJrK4tEq5M4Hmu4w==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@umalqura/core@0.0.7':
+    resolution: {integrity: sha512-o8G1J2KRzM/Hal5Taln1QHzhfJsE4+8hQH087Pl6C0ZjPhmw7tjjuejjbgj++Lc2BP4kRDswTJ3J5TuGGybA2Q==}
 
   '@unrs/resolver-binding-darwin-arm64@1.6.4':
     resolution: {integrity: sha512-ehtknxfSIlAIVFmQ9/yVbW4SzyjWuQpKAtRujNzuR0qS1avz4+BSmM0lVhl4OnU7nJaun/g+AM2FeaUY5KwZsg==}
@@ -4383,6 +4389,8 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 8.32.1
       eslint-visitor-keys: 4.2.0
+
+  '@umalqura/core@0.0.7': {}
 
   '@unrs/resolver-binding-darwin-arm64@1.6.4':
     optional: true
