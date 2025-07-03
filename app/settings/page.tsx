@@ -2,21 +2,50 @@
 
 import { usePrayerStore } from "@/components/prayertime/usePrayerStore";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { NumberInput } from "@/components/ui/number-input";
+import { useEffect, useState } from "react";
 
 export default function SettingsPage() {
-  const { hijriDateOffset, adhan, iqamah, setHijriDateOffset, setAdhan, setIqamah } =
-    usePrayerStore();
+  const {
+    initialize,
+    initialized,
+    initializing,
+    error,
+    hijriDateOffset,
+    adhan,
+    iqamah,
+    setHijriDateOffset,
+    setAdhan,
+    setIqamah,
+    save,
+  } = usePrayerStore();
 
   const [offset, setOffset] = useState(hijriDateOffset);
   const [adhanTimes, setAdhanTimes] = useState(adhan);
   const [iqamahTimes, setIqamahTimes] = useState(iqamah);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setHijriDateOffset(offset);
     setAdhan(adhanTimes);
     setIqamah(iqamahTimes);
+
+    await save();
   };
+
+  useEffect(() => {
+    // Only initialize if it hasn't been done yet
+    if (!initialized && !initializing) {
+      initialize();
+    }
+  }, [initialized, initializing, initialize]);
+
+  if (initializing) {
+    return <div className="p-6">Loading settings...</div>;
+  }
+
+  if (error) {
+    return <div className="p-6 text-red-500">Error: {error}</div>;
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-8">
@@ -24,64 +53,51 @@ export default function SettingsPage() {
 
       {/* Hijri Date Offset */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Hijri Date Offset</h2>
-        <div className="flex items-center gap-4">
-          <input
-            type="number"
+        <h2 className="text-xl font-semibold">Iqamah Times</h2>
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">Hijri Date Offset</label>
+          <NumberInput
             value={offset}
-            onChange={(e) => setOffset(Number(e.target.value))}
-            className="w-24 p-2 border rounded"
+            onChange={(val) => setOffset(val)}
+            label="Hijri Date Offset"
           />
-          <span className="text-sm text-gray-600">days</span>
         </div>
       </div>
 
       {/* Adhan Times */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Adhan Times</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {Object.entries(adhanTimes).map(([prayer, minutes]) => (
-            <div key={prayer} className="space-y-2">
-              <label className="block text-sm font-medium">{prayer}</label>
-              <input
-                type="number"
-                value={minutes}
-                onChange={(e) =>
-                  setAdhanTimes((prev) => ({
-                    ...prev,
-                    [prayer]: Number(e.target.value),
-                  }))
-                }
-                className="w-24 p-2 border rounded"
-              />
-              <span className="text-sm text-gray-600 ml-2">minutes</span>
-            </div>
-          ))}
-        </div>
+        <h2 className="text-xl font-semibold">Adzan Times</h2>
+        {Object.entries(adhanTimes).map(([prayer, minutes]) => (
+          <div key={prayer} className="space-y-2">
+            <label className="block text-sm font-medium">{prayer}</label>
+            <NumberInput
+              value={minutes}
+              onChange={(val) => setAdhanTimes((prev) => ({ ...prev, [prayer]: Number(val) }))}
+              label="minutes"
+            />
+          </div>
+        ))}
       </div>
 
       {/* Iqamah Times */}
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">Iqamah Times</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {Object.entries(iqamahTimes).map(([prayer, minutes]) => (
-            <div key={prayer} className="space-y-2">
-              <label className="block text-sm font-medium">{prayer}</label>
-              <input
-                type="number"
-                value={minutes}
-                onChange={(e) =>
-                  setIqamahTimes((prev) => ({
-                    ...prev,
-                    [prayer]: Number(e.target.value),
-                  }))
-                }
-                className="w-24 p-2 border rounded"
-              />
-              <span className="text-sm text-gray-600 ml-2">minutes</span>
-            </div>
-          ))}
-        </div>
+
+        {Object.entries(iqamahTimes).map(([prayer, minutes]) => (
+          <div key={prayer} className="space-y-2">
+            <label className="block text-sm font-medium">{prayer}</label>
+            <NumberInput
+              value={minutes}
+              onChange={(val) =>
+                setIqamahTimes((prev) => ({
+                  ...prev,
+                  [prayer]: Number(val),
+                }))
+              }
+              label="minutes"
+            />
+          </div>
+        ))}
       </div>
 
       {/* Save Button */}

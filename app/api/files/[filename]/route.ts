@@ -82,7 +82,7 @@ export async function DELETE(
     await unlink(filePath);
 
     // Notify clients
-    notifyClients();
+    notifyClients(`event: update\ndata: newImage\n\n`);
 
     return corsHeaders(NextResponse.json({ message: "File deleted successfully" }));
   } catch (err) {

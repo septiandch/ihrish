@@ -1,9 +1,9 @@
+import { initStorage, storageConfig } from "@/lib/config/storage";
+import crypto from "crypto";
 import { writeFile } from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import { notifyClients } from "../shared/clients";
-import { storageConfig, initStorage } from "@/lib/config/storage";
-import crypto from "crypto";
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     // Notify clients
-    notifyClients();
+    notifyClients(`event: update\ndata: newImage\n\n`);
 
     // Return the unique filename - we'll create an endpoint to serve these files
     return NextResponse.json({

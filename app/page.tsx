@@ -3,6 +3,7 @@
 import Carousel from "@/components/carousel";
 import { Clock, PrayerSession, PrayerTime } from "@/components/prayertime";
 import Date from "@/components/prayertime/Date";
+import { usePrayerStore } from "@/components/prayertime/usePrayerStore";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Marquee from "@/components/ui/marquee";
 import Logo from "@/lib/assets/logo.svg";
@@ -12,6 +13,7 @@ import getMediaFiles from "@/lib/utils/getMediaFIles";
 import { Suspense, useCallback, useEffect, useState } from "react";
 
 function HomeContent() {
+  const { initialize } = usePrayerStore();
   const [mediaFiles, setMediaFiles] = useState<string[]>(["/media/makkah.jpg"]);
   const [connectionAttempts, setConnectionAttempts] = useState(0);
   const isTv = useIsTv();
@@ -26,6 +28,7 @@ function HomeContent() {
   useEffect(() => {
     // Initial fetch
     fetchMedia();
+    initialize();
 
     let retryTimeout: NodeJS.Timeout;
     const maxRetries = 5;
@@ -38,16 +41,20 @@ function HomeContent() {
         setConnectionAttempts(0); // Reset counter on successful connection
       });
 
-      eventSource.addEventListener("update", () => {
-        fetchMedia();
+      eventSource.addEventListener("update", (event) => {
+        switch (event.data) {
+          case "newImage":
+            fetchMedia();
+            break;
+          case "newSettings":
+            initialize();
+            break;
+        }
       });
 
       // Also listen for general messages as fallback
       eventSource.onmessage = (event) => {
         console.log("SSE message received:", event.data);
-        if (event.data.includes("newImage")) {
-          fetchMedia();
-        }
       };
 
       eventSource.onerror = () => {

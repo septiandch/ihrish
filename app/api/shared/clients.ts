@@ -19,7 +19,7 @@ if (!globalWithSSE.sseClients) {
 
 export const clients = globalWithSSE.sseClients;
 
-export function notifyClients() {
+export function notifyClients(message: string) {
   if (clients.size === 0) {
     console.log("Warning: No clients connected to notify");
     return;
@@ -36,7 +36,6 @@ export function notifyClients() {
         return;
       }
 
-      const message = `event: update\ndata: newImage\n\n`;
       client.enqueue(message);
       console.log("Successfully sent update to client");
     } catch (error) {
