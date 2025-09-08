@@ -1,9 +1,9 @@
 "use client";
 
 import Carousel from "@/components/carousel";
-import { Clock, PrayerSession, PrayerTime } from "@/components/prayertime";
-import Date from "@/components/prayertime/Date";
+import { PrayerSession, PrayerTime } from "@/components/prayertime";
 import { usePrayerStore } from "@/components/prayertime/usePrayerStore";
+import TimeDisplay from "@/components/TimeDisplay";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Marquee from "@/components/ui/marquee";
 import Logo from "@/lib/assets/logo.svg";
@@ -107,10 +107,7 @@ function HomeContent() {
               </div>
             </div>
 
-            <div className="flex justify-center items-center gap-4 text-white">
-              <Date className={cn("text-2xl", isTv && "text-4xl font-bold")} />
-              <Clock className={cn("pb-1 text-7xl", isTv && "text-8xl")} />
-            </div>
+            <TimeDisplay />
           </div>
 
           <div className="h-max p-2 bg-emerald-800/20 rounded-lg overflow-hidden">

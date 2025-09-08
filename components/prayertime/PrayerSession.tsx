@@ -36,13 +36,19 @@ export function PrayerSession() {
             isPraying && "opacity-0 animate-fadein delay-1000"
           )}
         >
-          <span key={label.main} className="text-6xl whitespace-pre-wrap text-shadow-md">
+          <span
+            key={label.main}
+            className={cn(
+              "text-6xl whitespace-pre-wrap text-shadow-md",
+              (isAdhan || isPraying) && "text-8xl"
+            )}
+          >
             {label.main}
           </span>
           <span
             className={cn(
               "text-[10rem] whitespace-pre-wrap",
-              (isAdhan || isPraying) && "text-4xl font-normal text-shadow-md",
+              (isAdhan || isPraying) && "text-5xl font-normal text-shadow-md",
               !label.sub && "hidden"
             )}
           >
