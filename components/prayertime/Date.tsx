@@ -13,7 +13,7 @@ const localizeDay: { [key: string]: string } = {
   Thursday: "Kamis",
   Friday: "Jumat",
   Saturday: "Sabtu",
-  Sunday: "Minggu",
+  Sunday: "Ahad",
 };
 
 const localizeMonth: { [key: string]: string } = {
